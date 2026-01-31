@@ -9,8 +9,7 @@ const dniRoutes = require('./routes/dni');
 const app = express();
 
 const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:5000';
-app.use(cors({ origin: FRONTEND, credentials: true }));
-app.use(express.json());
+app.use(cors({ origin: true, credentials: true }));app.use(express.json());
 app.use(morgan('dev'));
 
 // Mount DNI API
