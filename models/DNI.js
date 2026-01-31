@@ -29,9 +29,17 @@ const BusquedaSchema = new Schema({
   fecha: { type: Date, default: Date.now }
 }, { _id: false });
 
+const CarnetSchema = new Schema({
+  tieneCarnet: { type: Boolean, default: false },
+  categoria: { type: String },           // ej: "B", "C"
+  puntos: { type: Number, default: 12 }, // puntos actuales; valor por defecto
+  fechaEmision: { type: Date },
+  fechaVencimiento: { type: Date }
+}, { _id: false });
+
 const dniSchema = new Schema({
   discordUserId: { type: String, required: true, unique: true },
-  discordTag: { type: String, required: false },
+  discordTag: { type: String },
   dniNumero: { type: String, required: true, unique: true },
   nombreCompleto: { type: String, required: true },
   fechaNacimiento: { type: String },
@@ -42,7 +50,10 @@ const dniSchema = new Schema({
   multas: { type: [MultaSchema], default: [] },
   busqueda: { type: BusquedaSchema, default: () => ({ activo: false }) },
   antecedentes: { type: [AntecedenteSchema], default: [] },
-  atestados: { type: [AtestadoSchema], default: [] }
+  atestados: { type: [AtestadoSchema], default: [] },
+
+  // Nuevo: carnet
+  carnet: { type: CarnetSchema, default: () => ({ tieneCarnet: false, puntos: 12 }) }
 }, { timestamps: true });
 
 module.exports = model('DNI', dniSchema);

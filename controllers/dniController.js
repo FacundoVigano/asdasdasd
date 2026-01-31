@@ -194,3 +194,58 @@ exports.setBusqueda = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
+
+exports.setCarnet = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const payload = req.body || {};
+    const user = await findUser(id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    user.carnet = {
+      ...user.carnet?.toObject?.(),
+      tieneCarnet: !!payload.tieneCarnet,
+      categoria: payload.categoria || user.carnet?.categoria || '',
+      puntos: (typeof payload.puntos === 'number') ? payload.puntos : (user.carnet?.puntos ?? 12),
+      fechaEmision: payload.fechaEmision ? new Date(payload.fechaEmision) : user.carnet?.fechaEmision,
+      fechaVencimiento: payload.fechaVencimiento ? new Date(payload.fechaVencimiento) : user.carnet?.fechaVencimiento
+    };
+
+    await user.save();
+    return res.json({ user });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+exports.deductPuntos = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const puntosRaw = req.body.puntos;
+    const motivo = (req.body.motivo || '').toString().trim();
+    const creadoPor = (req.body.creadoPor || '').toString().trim();
+    const puntos = Number(puntosRaw);
+
+    if (!Number.isFinite(puntos) || puntos <= 0) {
+      return res.status(400).json({ error: 'puntos inválidos (deben ser número > 0)' });
+    }
+
+    const user = await findUser(id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    if (!user.carnet) user.carnet = { tieneCarnet: false, puntos: 12 };
+
+    user.carnet.puntos = Math.max(0, (user.carnet.puntos ?? 0) - puntos);
+
+    user.atestados.push({
+      descripcion: `Descuento de ${puntos} puntos${motivo ? ' — ' + motivo : ''}`,
+      creadoPor,
+      fecha: new Date()
+    });
+
+    await user.save();
+    return res.json({ user });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};

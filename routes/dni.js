@@ -26,4 +26,8 @@ router.delete('/:id/atestados/:atestadoId', ctrl.removeAtestado);
 // Busqueda
 router.put('/:id/busqueda', ctrl.setBusqueda);
 
+// Carnet routes
+router.put('/:id/carnet', ctrl.setCarnet);               // set/update carnet
+router.post('/:id/carnet/deduct', ctrl.deductPuntos);    // quitar puntos
+
 module.exports = router;
