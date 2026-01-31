@@ -1,7 +1,7 @@
 const DNI = require('../models/DNI');
 const mongoose = require('mongoose');
 
-// Helper: busca por _id, discordUserId o dniNumero
+// helper find user by id string (ObjectId) or discordUserId or dniNumero
 async function findUser(id) {
   let user = null;
   if (mongoose.Types.ObjectId.isValid(id)) {
@@ -13,7 +13,6 @@ async function findUser(id) {
   return user;
 }
 
-// Create
 exports.create = async (req, res) => {
   try {
     const doc = new DNI(req.body);
@@ -24,7 +23,6 @@ exports.create = async (req, res) => {
   }
 };
 
-// Get single
 exports.get = async (req, res) => {
   try {
     const user = await findUser(req.params.id);
@@ -35,7 +33,6 @@ exports.get = async (req, res) => {
   }
 };
 
-// Search
 exports.search = async (req, res) => {
   try {
     const q = req.query.q;
@@ -55,14 +52,14 @@ exports.search = async (req, res) => {
   }
 };
 
-// Add multa (valida campos, devuelve la multa creada)
+// add multa
 exports.addMulta = async (req, res) => {
   try {
     const { id } = req.params;
     const motivo = (req.body.motivo ?? req.body.value ?? '').toString().trim();
     const montoRaw = req.body.monto ?? req.body.amount;
     const monto = montoRaw !== undefined && montoRaw !== '' ? Number(montoRaw) : undefined;
-    const creadoPor = req.body.creadoPor ?? req.body.creador ?? undefined;
+    const creadoPor = req.body.creadoPor ?? req.body.creador ?? '';
 
     if (!motivo) return res.status(400).json({ error: 'motivo requerido' });
     if (monto !== undefined && (Number.isNaN(monto) || monto < 0)) {
@@ -75,7 +72,6 @@ exports.addMulta = async (req, res) => {
     user.multas.push({ motivo, monto, creadoPor, fecha: new Date() });
     await user.save();
 
-    // devolver la multa recién creada (último elemento)
     const nuevaMulta = user.multas[user.multas.length - 1];
     return res.status(201).json({ multa: nuevaMulta, user });
   } catch (err) {
@@ -83,7 +79,6 @@ exports.addMulta = async (req, res) => {
   }
 };
 
-// Remove multa by subdocument id
 exports.removeMulta = async (req, res) => {
   try {
     const { id, multaId } = req.params;
@@ -97,19 +92,18 @@ exports.removeMulta = async (req, res) => {
     await user.save();
     return res.json({ deletedId: multaId, user });
   } catch (err) {
-    console.error('removeMulta error:', err);
     return res.status(500).json({ error: err.message });
   }
 };
 
-// Add antecedente
+// antecedentes
 exports.addAntecedente = async (req, res) => {
   try {
     const { id } = req.params;
     const razon = (req.body.razon ?? '').toString().trim();
     const tiempoPrision = req.body.tiempoPrision;
     const articulo = req.body.articulo;
-    const creadoPor = req.body.creadoPor;
+    const creadoPor = req.body.creadoPor ?? req.body.creador ?? '';
 
     if (!razon) return res.status(400).json({ error: 'razon requerido' });
 
@@ -126,7 +120,6 @@ exports.addAntecedente = async (req, res) => {
   }
 };
 
-// Remove antecedente by id
 exports.removeAntecedente = async (req, res) => {
   try {
     const { id, antecedenteId } = req.params;
@@ -140,18 +133,17 @@ exports.removeAntecedente = async (req, res) => {
     await user.save();
     return res.json({ deletedId: antecedenteId, user });
   } catch (err) {
-    console.error('removeAntecedente error:', err);
     return res.status(500).json({ error: err.message });
   }
 };
 
-// Add atestado
+// atestados
 exports.addAtestado = async (req, res) => {
   try {
     const { id } = req.params;
-    const descripcion = req.body.descripcion ?? req.body.value;
+    const descripcion = req.body.descripcion ?? req.body.value ?? '';
     const fileUrl = req.body.fileUrl;
-    const creadoPor = req.body.creadoPor;
+    const creadoPor = req.body.creadoPor ?? req.body.creador ?? '';
 
     const user = await findUser(id);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -166,7 +158,6 @@ exports.addAtestado = async (req, res) => {
   }
 };
 
-// Remove atestado
 exports.removeAtestado = async (req, res) => {
   try {
     const { id, atestadoId } = req.params;
@@ -180,12 +171,11 @@ exports.removeAtestado = async (req, res) => {
     await user.save();
     return res.json({ deletedId: atestadoId, user });
   } catch (err) {
-    console.error('removeAtestado error:', err);
     return res.status(500).json({ error: err.message });
   }
 };
 
-// Set busqueda (PUT): { activo: boolean, motivo, creadoPor }
+// busqueda
 exports.setBusqueda = async (req, res) => {
   try {
     const { id } = req.params;
@@ -194,7 +184,7 @@ exports.setBusqueda = async (req, res) => {
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
     if (activo) {
-      user.busqueda = { activo: true, motivo, creadoPor, fecha: new Date() };
+      user.busqueda = { activo: true, motivo, creadoPor: creadoPor ?? '', fecha: new Date() };
     } else {
       user.busqueda = { activo: false };
     }

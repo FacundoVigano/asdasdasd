@@ -1,31 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/dniController');
-const auth = require('../middleware/auth');
 
-// Require authentication for all /api/dni routes
-router.use(auth.verifyToken);
+// Public API for DNI resources (no auth)
 
-// Anyone authenticated (admin/policia/medico) can search and view
+// Search and get
 router.get('/search', ctrl.search);
 router.get('/:id', ctrl.get);
 
-// Create user: only admin
-router.post('/', auth.requireAnyRole(['admin']), ctrl.create);
+// Create user
+router.post('/', ctrl.create);
 
-// Multas: add/remove -> policia or admin
-router.post('/:id/multas', auth.requireAnyRole(['policia', 'admin']), ctrl.addMulta);
-router.delete('/:id/multas/:multaId', auth.requireAnyRole(['policia', 'admin']), ctrl.removeMulta);
+// Multas
+router.post('/:id/multas', ctrl.addMulta);
+router.delete('/:id/multas/:multaId', ctrl.removeMulta);
 
-// Antecedentes: policia or admin
-router.post('/:id/antecedentes', auth.requireAnyRole(['policia', 'admin']), ctrl.addAntecedente);
-router.delete('/:id/antecedentes/:antecedenteId', auth.requireAnyRole(['policia', 'admin']), ctrl.removeAntecedente);
+// Antecedentes
+router.post('/:id/antecedentes', ctrl.addAntecedente);
+router.delete('/:id/antecedentes/:antecedenteId', ctrl.removeAntecedente);
 
-// Atestados: medico or admin can add/remove; anyone authenticated can view
-router.post('/:id/atestados', auth.requireAnyRole(['medico', 'admin']), ctrl.addAtestado);
-router.delete('/:id/atestados/:atestadoId', auth.requireAnyRole(['medico', 'admin']), ctrl.removeAtestado);
+// Atestados
+router.post('/:id/atestados', ctrl.addAtestado);
+router.delete('/:id/atestados/:atestadoId', ctrl.removeAtestado);
 
-// Busqueda: policia or admin can set
-router.put('/:id/busqueda', auth.requireAnyRole(['policia', 'admin']), ctrl.setBusqueda);
+// Busqueda
+router.put('/:id/busqueda', ctrl.setBusqueda);
 
 module.exports = router;
