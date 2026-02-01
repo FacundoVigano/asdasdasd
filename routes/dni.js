@@ -30,4 +30,7 @@ router.put('/:id/busqueda', ctrl.setBusqueda);
 router.put('/:id/carnet', ctrl.setCarnet);               // set/update carnet
 router.post('/:id/carnet/deduct', ctrl.deductPuntos);    // quitar puntos
 
+router.get('/deudores', ctrl.listDeudores); // lista todos los que tienen multas
+router.get('/buscados', ctrl.listBuscados); // lista todos los que están en busqueda.activo = true
+
 module.exports = router;

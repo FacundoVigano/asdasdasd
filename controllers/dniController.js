@@ -249,3 +249,22 @@ exports.deductPuntos = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
+
+exports.listDeudores = async (req, res) => {
+  try {
+    const results = await DNI.find({ 'multas.0': { $exists: true } }).limit(500).sort({ 'multas.fecha': -1 });
+    return res.json(results);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+// Lista de búsqueda y captura activos
+exports.listBuscados = async (req, res) => {
+  try {
+    const results = await DNI.find({ 'busqueda.activo': true }).limit(500).sort({ 'busqueda.fecha': -1 });
+    return res.json(results);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};

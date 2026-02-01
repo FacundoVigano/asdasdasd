@@ -1,19 +1,25 @@
-require('dotenv').config();
+const dotenv = require('dotenv');
+dotenv.config();
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 const cors = require('cors');
 
 const dniRoutes = require('./routes/dni');
+const denunciaRoutes = require('./routes/denuncia');
+const agentRoutes = require('./routes/agents');
 
 const app = express();
 
 const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:5000';
-app.use(cors({ origin: true, credentials: true }));app.use(express.json());
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json());
 app.use(morgan('dev'));
 
-// Mount DNI API
+// Mount routes
 app.use('/api/dni', dniRoutes);
+app.use('/api/denuncias', denunciaRoutes);
+app.use('/api/agentes', agentRoutes);
 
 app.get('/', (req, res) => res.send('DNI API running'));
 
